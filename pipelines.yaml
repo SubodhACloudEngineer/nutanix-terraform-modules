@@ -1,0 +1,94 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - CHANGELOG
+      - '*.md'
+      - '*.yaml'
+      - '**/README'
+      - '**/CHANGELOG'
+
+parameters:
+  - name: module
+    type: string
+    default: none
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Publish
+    jobs:
+      - job: PublishModule
+        steps:
+          - bash: |
+              set -e
+
+              MODULE_PARAM="${{ parameters.module }}"
+
+              if [ "$MODULE_PARAM" = "none" ]; then
+                CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $(Build.SourceVersion))
+
+                MODULE_FOLDER=$(echo "$CHANGED_FILES" \
+                  | grep -vE '(^|/)README$' \
+                  | grep -vE '(^|/)CHANGELOG$' \
+                  | grep -vE '\.yaml$' \
+                  | head -n 1 \
+                  | cut -d'/' -f1)
+              else
+                MODULE_FOLDER="$MODULE_PARAM"
+              fi
+
+              if [ -z "$MODULE_FOLDER" ]; then
+                echo "##vso[task.logissue type=error]Unable to determine changed module."
+                exit 1
+              fi
+
+              MODULE_NAME=$(echo "$MODULE_FOLDER" | tr '[:upper:]' '[:lower:]')
+              MODULE_VERSION=$(cat "$MODULE_FOLDER/VERSION")
+
+              echo "Detected module: $MODULE_NAME (version $MODULE_VERSION)"
+
+              echo "##vso[task.setvariable variable=modulename]$MODULE_NAME"
+              echo "##vso[task.setvariable variable=moduleversion]$MODULE_VERSION"
+            displayName: 'Extract module name and version'
+
+          - bash: |
+              set -e
+
+              git config user.email "DevopsBuildService@Umicore.com"
+              git config user.name "DevopsBuildService"
+
+              curl -sSL -o terraform-docs.tar.gz \
+                https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz
+              tar -xzf terraform-docs.tar.gz terraform-docs
+              chmod +x terraform-docs
+              sudo mv terraform-docs /usr/local/bin/terraform-docs
+
+              terraform-docs markdown --output-file ./README --output-mode inject "$(modulename)"
+
+              git add "$(modulename)/README"
+              if ! git diff --cached --quiet; then
+                git commit -m "docs: update $(modulename) README [skip ci]"
+                git push origin HEAD:main --force
+              else
+                echo "No documentation changes to commit."
+              fi
+            displayName: 'Generate Documentation'
+
+          - bash: |
+              set -e
+              zip -r "$(Build.ArtifactStagingDirectory)/$(modulename).zip" "$(modulename)"
+            displayName: 'Build Package'
+
+          - task: UniversalPackages@0
+            displayName: 'Publish Package'
+            inputs:
+              command: publish
+              publishDirectory: '$(Build.ArtifactStagingDirectory)'
+              vstsFeedPublish: 'f17fd793-4867-4acc-b07f-0467685b3b92'
+              vstsFeedPackagePublish: '$(modulename)'
+              versionOption: custom
+              versionPublish: '$(moduleversion)'
