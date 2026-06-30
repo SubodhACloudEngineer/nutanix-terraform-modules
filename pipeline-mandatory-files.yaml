@@ -1,0 +1,79 @@
+trigger: none
+
+jobs:
+  - job: CheckMandatoryFiles
+    pool:
+      vmImage: ubuntu-latest
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    steps:
+      - task: PowerShell@2
+        displayName: 'Check CHANGELOG and VERSION updated'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $ErrorActionPreference = "Stop"
+
+            $org = "$(System.CollectionUri)"
+            $project = "$(System.TeamProject)"
+            $repoId = "$(Build.Repository.ID)"
+            $prId = "$(System.PullRequest.PullRequestId)"
+            $token = "$(System.AccessToken)"
+
+            $headers = @{
+              Authorization = "Bearer $token"
+            }
+
+            # Get all commits in the PR
+            $commitsUrl = "$org$project/_apis/git/repositories/$repoId/pullRequests/$prId/commits?api-version=7.0"
+            $commitsResponse = Invoke-RestMethod -Uri $commitsUrl -Headers $headers -Method Get
+
+            $changedFiles = @()
+
+            foreach ($commit in $commitsResponse.value) {
+              $changesUrl = "$org$project/_apis/git/repositories/$repoId/commits/$($commit.commitId)/changes?api-version=7.0"
+              $changesResponse = Invoke-RestMethod -Uri $changesUrl -Headers $headers -Method Get
+              foreach ($change in $changesResponse.changes) {
+                $changedFiles += $change.item.path
+              }
+            }
+
+            $changedFiles = $changedFiles | Select-Object -Unique
+
+            $changelogUpdated = $changedFiles | Where-Object { $_ -like "*CHANGELOG" }
+            $versionUpdated = $changedFiles | Where-Object { $_ -like "*VERSION" }
+
+            if (-not $changelogUpdated -and -not $versionUpdated) {
+              $warningText = "We have noticed you have not updated the CHANGELOG and VERSION file 😱`nPlease confirm if this is not needed."
+
+              $threadsUrl = "$org$project/_apis/git/repositories/$repoId/pullRequests/$prId/threads?api-version=7.0"
+              $threadsResponse = Invoke-RestMethod -Uri $threadsUrl -Headers $headers -Method Get
+
+              $alreadyCommented = $false
+              foreach ($thread in $threadsResponse.value) {
+                foreach ($comment in $thread.comments) {
+                  if ($comment.content -eq $warningText) {
+                    $alreadyCommented = $true
+                  }
+                }
+              }
+
+              if ($alreadyCommented) {
+                Write-Host "Warning comment already exists on PR. Skipping."
+              } else {
+                $body = @{
+                  comments = @(
+                    @{
+                      parentCommentId = 0
+                      content = $warningText
+                      commentType = 1
+                    }
+                  )
+                  status = 1
+                } | ConvertTo-Json -Depth 5
+
+                Invoke-RestMethod -Uri $threadsUrl -Headers $headers -Method Post -Body $body -ContentType "application/json"
+                Write-Host "Posted CHANGELOG/VERSION reminder comment."
+              }
+            } else {
+              Write-Host "CHANGELOG and/or VERSION updated. No action needed."
+            }
