@@ -1,0 +1,130 @@
+# nutanix_vm — Terraform Module
+
+## Description
+
+This module provisions virtual machines on Nutanix AHV via Prism Central.
+It supports two provisioning paths controlled by the `source_type` variable:
+`"template"` deploys a VM from a Prism Central VM Template using the
+`nutanix_deploy_templates_v2` resource, while `"image"` clones from an Image
+Service image using `nutanix_virtual_machine`. Both paths share a common
+variable interface. The module enforces all 10 mandatory Nutanix categories
+defined in the Umicore HLD as required inputs, builds a consistent VM name
+from the site code, usage code, and sequence number, and supports optional
+guest customisation via Sysprep (Windows) or cloud-init (Linux).
+
+---
+
+## Usage
+
+### Template path — Windows Server
+
+```hcl
+module "app_server" {
+  source = "./nutanix_vm"
+
+  UMICORE_LOCATION = "HOB"
+  UMICORE_PROJECT  = "NUTANIXPRD"
+  environment      = "prd"
+
+  usage_code           = "AS"
+  sequence_number      = 1
+  source_type          = "template"
+  template_name        = "WIN2025-golden-v1.0"
+  cluster_name         = "HOB-NTX-CL01"
+  subnet_name          = "VLAN-APP-100"
+  num_vcpus_per_socket = 4
+  num_cpu_sockets      = 1
+  memory_size_mib      = 8192
+  os_type              = "windows"
+
+  sysprep_xml = file("${path.module}/sysprep/unattend.xml")
+
+  category_business_unit    = "Manufacturing"
+  category_environment      = "prd"
+  category_criticality      = "High"
+  category_recharge         = "CC-MFG-001"
+  category_primary_function = "ApplicationServer"
+  category_application      = "SAP"
+  category_description      = "HOB plant application server"
+  category_bu_responsible   = "plant-owner@umicore.com"
+  category_it_responsible   = "infra-team@umicore.com"
+  category_backup           = "Gold"
+}
+```
+
+### Image path — Linux / appliance
+
+```hcl
+module "db_server" {
+  source = "./nutanix_vm"
+
+  UMICORE_LOCATION = "HOB"
+  UMICORE_PROJECT  = "NUTANIXPRD"
+  environment      = "prd"
+
+  usage_code           = "DB"
+  sequence_number      = 1
+  source_type          = "image"
+  image_name           = "RHEL9-golden-v1.0"
+  cluster_name         = "HOB-NTX-CL01"
+  subnet_name          = "VLAN-DB-200"
+  num_vcpus_per_socket = 4
+  num_cpu_sockets      = 2
+  memory_size_mib      = 16384
+  os_disk_size_gib     = 80
+  os_type              = "linux"
+
+  data_disks = [
+    { size_gib = 500, label = "data" },
+    { size_gib = 200, label = "logs" },
+  ]
+
+  cloud_init_userdata = file("${path.module}/cloud-init/db.yaml")
+
+  category_business_unit    = "IT"
+  category_environment      = "prd"
+  category_criticality      = "High"
+  category_recharge         = "CC-IT-DB"
+  category_primary_function = "Database"
+  category_application      = "PostgreSQL"
+  category_description      = "HOB primary database server"
+  category_bu_responsible   = "dba-team@umicore.com"
+  category_it_responsible   = "infra-team@umicore.com"
+  category_backup           = "Gold"
+}
+```
+
+---
+
+## Naming Convention
+
+When `vm_name_override` is not set the module computes the VM name as:
+
+```
+<UMICORE_LOCATION>-<usage_code>-<NNNN>
+```
+
+All components are lowercased and the sequence number is zero-padded to four
+digits (e.g. `hob-as-0001`). The resulting name is at most 10 characters,
+which fits safely within the 15-character Windows NetBIOS hostname limit.
+
+For acquired or migrated servers that must keep an existing hostname, set
+`vm_name_override` to the legacy name. The override is used verbatim — no
+lowercasing or site-code prefix is applied — so the caller is responsible for
+ensuring the value is a valid hostname for the target OS.
+
+---
+
+## Requirements
+
+| Component | Version |
+|---|---|
+| Terraform | >= 1.8 |
+| nutanix/nutanix provider | ~> 2.4 |
+| Nutanix AOS | >= 7.5 |
+| Prism Central | >= 7.5 |
+
+---
+
+<!-- BEGIN_TF_DOCS -->
+<!-- END_TF_DOCS -->

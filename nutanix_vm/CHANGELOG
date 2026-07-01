@@ -1,0 +1,13 @@
+## [1.0.0] - June 2026
+### Added
+- Initial release of the nutanix_vm Terraform module
+- Unified VM provisioning module supporting both template path
+  (nutanix_deploy_templates_v2) and image path (nutanix_virtual_machine)
+  via the source_type variable
+- All 10 mandatory HLD Nutanix categories enforced as required inputs
+- Dynamic naming logic: UMICORE_LOCATION-usage_code-NNNN
+- vm_name_override support for acquired/migrated site legacy hostnames
+- Guest customisation: Sysprep (Windows), cloud-init (Linux),
+  none (appliances)
+- Data disk support via data_disks variable
+- Sub-resource naming for vDisks and vNICs derived from vm_name
