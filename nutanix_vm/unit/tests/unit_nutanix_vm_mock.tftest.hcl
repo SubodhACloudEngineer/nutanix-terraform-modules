@@ -20,20 +20,20 @@
 mock_provider "nutanix" {
   mock_data "nutanix_cluster" {
     defaults = {
-      id   = "mock-cluster-uuid-01"
+      id   = "00000000-0000-0000-0000-000000000001"
       name = "HOB-NTX-CL01"
       metadata = {
-        uuid = "mock-cluster-uuid-01"
+        uuid = "00000000-0000-0000-0000-000000000001"
         kind = "cluster"
       }
     }
   }
   mock_data "nutanix_subnet" {
     defaults = {
-      id   = "mock-subnet-uuid-01"
+      id   = "00000000-0000-0000-0000-000000000002"
       name = "VLAN-APP-100"
       metadata = {
-        uuid = "mock-subnet-uuid-01"
+        uuid = "00000000-0000-0000-0000-000000000002"
         kind = "subnet"
       }
     }
@@ -41,10 +41,10 @@ mock_provider "nutanix" {
   # Used by image path (source_type = "image")
   mock_data "nutanix_image" {
     defaults = {
-      id   = "mock-image-uuid-01"
+      id   = "00000000-0000-0000-0000-000000000003"
       name = "WIN2025-golden-v1.0"
       metadata = {
-        uuid = "mock-image-uuid-01"
+        uuid = "00000000-0000-0000-0000-000000000003"
         kind = "image"
       }
     }
@@ -54,7 +54,7 @@ mock_provider "nutanix" {
     defaults = {
       templates = [
         {
-          ext_id = "mock-template-ext-id-01"
+          ext_id = "00000000-0000-0000-0000-000000000004"
           name   = "WIN2025-template-v1.0"
         }
       ]
