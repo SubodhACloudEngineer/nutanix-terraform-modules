@@ -608,7 +608,7 @@ run "invalid_source_type_rejected" {
 
 run "invalid_umicore_location_rejected" {
   command         = plan
-  expect_failures = [module.nutanix_vm]
+  expect_failures = [var.UMICORE_LOCATION]
 
   variables {
     UMICORE_LOCATION = "NYC" # INVALID — not in the allowed 12 site codes
