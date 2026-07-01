@@ -1,0 +1,120 @@
+name: Terraform Validate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - '.github/workflows/terraform-validate.yml'
+
+  push:
+    branches: [main]
+    paths:
+      - '**.tf'
+
+jobs:
+  fmt:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      # Fails the PR if any .tf file is not correctly formatted.
+      # Run `terraform fmt -recursive` locally to fix before pushing.
+      - name: terraform fmt
+        run: terraform fmt -check -recursive -diff
+
+  validate-module:
+    name: Validate nutanix_vm module
+    runs-on: ubuntu-latest
+    needs: fmt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      # -backend=false skips backend initialisation entirely.
+      # The provider plugin (nutanix/nutanix v2.4) is still downloaded
+      # from the Terraform Registry — this is what gives us real schema
+      # validation for attribute names in nutanix_vm.tf.
+      - name: terraform init (module)
+        working-directory: nutanix_vm
+        run: terraform init -backend=false
+
+      # Validates syntax AND checks every attribute name against the
+      # provider schema that was downloaded in the step above.
+      # This will catch wrong attribute names in nutanix_vm.tf
+      # without connecting to a real Prism Central.
+      - name: terraform validate (module)
+        working-directory: nutanix_vm
+        run: terraform validate
+
+  validate-unit-harness:
+    name: Validate unit test harness
+    runs-on: ubuntu-latest
+    needs: fmt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      - name: terraform init (unit harness)
+        working-directory: nutanix_vm/unit
+        run: terraform init -backend=false
+
+      - name: terraform validate (unit harness)
+        working-directory: nutanix_vm/unit
+        run: terraform validate
+
+  mock-test:
+    name: Unit tests (mock provider — no cluster needed)
+    runs-on: ubuntu-latest
+    needs: [validate-module, validate-unit-harness]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      # terraform test with mock_provider runs entirely locally.
+      # No Nutanix cluster, no credentials, no network calls to PC.
+      # Tests the naming logic, variable validation rules, category
+      # mapping, and conditional resource selection.
+      # See nutanix_vm/unit/tests/unit_nutanix_vm_mock.tftest.hcl
+      - name: terraform init (unit — for mock tests)
+        working-directory: nutanix_vm/unit
+        run: terraform init -backend=false
+
+      - name: terraform test (mock provider)
+        working-directory: nutanix_vm/unit
+        run: terraform test -filter=tests/unit_nutanix_vm_mock.tftest.hcl
+
+  summary:
+    name: Validation summary
+    runs-on: ubuntu-latest
+    needs: [fmt, validate-module, validate-unit-harness, mock-test]
+    if: always()
+    steps:
+      - name: Report
+        run: |
+          echo "## Terraform Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| terraform fmt | ${{ needs.fmt.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| validate nutanix_vm module | ${{ needs.validate-module.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| validate unit harness | ${{ needs.validate-unit-harness.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| mock provider unit tests | ${{ needs.mock-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_No Nutanix cluster required for any of the above checks._" >> $GITHUB_STEP_SUMMARY
+          echo "_Real integration tests (terraform apply against HOB) are Sprint 4 scope._" >> $GITHUB_STEP_SUMMARY
