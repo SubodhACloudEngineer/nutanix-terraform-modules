@@ -52,11 +52,8 @@ resource "nutanix_virtual_machine" "this" {
     }
   }
 
-  # Sysprep: provider v2.4 exposes these as flat attributes (parallel to
-  # guest_customization_cloud_init_user_data) rather than a nested block.
-  guest_customization_sysprep_install_type = local.apply_sysprep ? "PREPARED" : null
-  guest_customization_sysprep_unattend_xml = local.apply_sysprep ? base64encode(var.sysprep_xml) : null
-
+  # guest_customization_sysprep is not exposed on nutanix_virtual_machine in
+  # provider v2.4 — sysprep is only supported via the template path resource.
   # cloud-init: flat attribute on this resource, not a nested block.
   guest_customization_cloud_init_user_data = local.apply_cloud_init ? base64encode(var.cloud_init_userdata) : null
 
