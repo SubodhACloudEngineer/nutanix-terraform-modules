@@ -7,7 +7,7 @@ output "vm_uuid" {
   description = "UUID of the provisioned VM in Prism Central. Use this for terraform import operations and for referencing the VM in other Nutanix resources."
   value = coalesce(
     try(nutanix_virtual_machine.this[0].id, null),
-    try(nutanix_deploy_templates_v2.this[0].deployed_vms[0].ext_id, null),
+    try(nutanix_deploy_templates_v2.this[0].id, null),
   )
 }
 
@@ -15,7 +15,7 @@ output "vm_ip" {
   description = "Primary IP address of the provisioned VM. Populated once Nutanix Guest Tools (NGT) reports the IP back to Prism Central after first boot. May be null immediately after apply if the VM has not yet completed first boot."
   value = try(
     nutanix_virtual_machine.this[0].nic_list_status[0].ip_endpoint_list[0].ip,
-    try(nutanix_deploy_templates_v2.this[0].deployed_vms[0].nic_list[0].ip_endpoint_list[0].ip, null),
+    null,
   )
 }
 
