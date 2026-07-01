@@ -70,15 +70,15 @@ run "naming_dynamic_application_server" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 13
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 13
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -119,15 +119,15 @@ run "naming_dynamic_file_server_zero_padding" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "FS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 1
-        memory_size_mib        = 2048
-        os_type                = "windows"
+        usage_code                = "FS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 1
+        memory_size_mib           = 2048
+        os_type                   = "windows"
         category_business_unit    = "Manufacturing"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -156,16 +156,16 @@ run "naming_override_bypasses_convention" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        vm_name_override       = "LEGACY-ACQ-SERVER-01"
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 1
-        memory_size_mib        = 2048
-        os_type                = "appliance"
+        usage_code                = "AS"
+        sequence_number           = 1
+        vm_name_override          = "LEGACY-ACQ-SERVER-01"
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 1
+        memory_size_mib           = 2048
+        os_type                   = "appliance"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -195,15 +195,15 @@ run "naming_different_site_chu" {
     UMICORE_LOCATION = "CHU"
     module_configs = {
       test = {
-        usage_code             = "WB"
-        sequence_number        = 42
-        source_type            = "image"
-        image_name             = "WIN2022-golden-v1.0"
-        cluster_name           = "CHU-NTX-CL01"
-        subnet_name            = "VLAN-WEB-200"
-        num_vcpus_per_socket   = 4
-        memory_size_mib        = 8192
-        os_type                = "windows"
+        usage_code                = "WB"
+        sequence_number           = 42
+        source_type               = "image"
+        image_name                = "WIN2022-golden-v1.0"
+        cluster_name              = "CHU-NTX-CL01"
+        subnet_name               = "VLAN-WEB-200"
+        num_vcpus_per_socket      = 4
+        memory_size_mib           = 8192
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Medium"
@@ -235,15 +235,15 @@ run "data_disk_labels_two_disks" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "DB"
-        sequence_number        = 5
-        source_type            = "image"
-        image_name             = "RHEL9-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 4
-        memory_size_mib        = 16384
-        os_type                = "linux"
+        usage_code           = "DB"
+        sequence_number      = 5
+        source_type          = "image"
+        image_name           = "RHEL9-golden-v1.0"
+        cluster_name         = "HOB-NTX-CL01"
+        subnet_name          = "VLAN-APP-100"
+        num_vcpus_per_socket = 4
+        memory_size_mib      = 16384
+        os_type              = "linux"
         data_disks = [
           { size_gib = 200, label = "data" },
           { size_gib = 100, label = "logs" }
@@ -285,15 +285,15 @@ run "no_data_disks_empty_labels" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 7
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 7
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -325,15 +325,15 @@ run "all_10_mandatory_categories_present" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "FS"
-        sequence_number        = 1
-        source_type            = "template"
-        template_name          = "WIN2025-template-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "FS"
+        sequence_number           = 1
+        source_type               = "template"
+        template_name             = "WIN2025-template-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "Manufacturing"
         category_environment      = "prd"
         category_criticality      = "High"
@@ -382,16 +382,16 @@ run "extra_tags_merge_with_mandatory" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
-        extra_tags             = { "NamingException" = "false", "MigrationWave" = "Wave1" }
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
+        extra_tags                = { "NamingException" = "false", "MigrationWave" = "Wave1" }
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -434,15 +434,15 @@ run "source_type_image_path_selected" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -475,15 +475,15 @@ run "source_type_template_path_selected" {
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "template"
-        template_name          = "WIN2025-template-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "template"
+        template_name             = "WIN2025-template-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -511,21 +511,21 @@ run "source_type_template_path_selected" {
 # ════════════════════════════════════════════════════════════════════════════════
 
 run "invalid_backup_value_rejected" {
-  command = plan
+  command         = plan
   expect_failures = [var.module_configs]
 
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -535,7 +535,7 @@ run "invalid_backup_value_rejected" {
         category_description      = "validation test"
         category_bu_responsible   = "test@umicore.com"
         category_it_responsible   = "infra@umicore.com"
-        category_backup           = "Daily"  # INVALID — not in Gold/Silver/Bronze/None
+        category_backup           = "Daily" # INVALID — not in Gold/Silver/Bronze/None
       }
     }
   }
@@ -543,23 +543,23 @@ run "invalid_backup_value_rejected" {
 
 
 run "invalid_environment_value_rejected" {
-  command = plan
+  command         = plan
   expect_failures = [var.module_configs]
 
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
-        category_environment      = "staging"  # INVALID — not in prd/tst/acc/dev
+        category_environment      = "staging" # INVALID — not in prd/tst/acc/dev
         category_criticality      = "Low"
         category_recharge         = "CC-IT-TST"
         category_primary_function = "ApplicationServer"
@@ -575,21 +575,21 @@ run "invalid_environment_value_rejected" {
 
 
 run "invalid_source_type_rejected" {
-  command = plan
+  command         = plan
   expect_failures = [var.module_configs]
 
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "marketplace"  # INVALID — removed from v0.3 design
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "marketplace" # INVALID — removed from v0.3 design
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -607,22 +607,22 @@ run "invalid_source_type_rejected" {
 
 
 run "invalid_umicore_location_rejected" {
-  command = plan
+  command         = plan
   expect_failures = [module.nutanix_vm]
 
   variables {
-    UMICORE_LOCATION = "NYC"  # INVALID — not in the allowed 12 site codes
+    UMICORE_LOCATION = "NYC" # INVALID — not in the allowed 12 site codes
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
         category_criticality      = "Low"
@@ -640,24 +640,24 @@ run "invalid_umicore_location_rejected" {
 
 
 run "invalid_criticality_value_rejected" {
-  command = plan
+  command         = plan
   expect_failures = [var.module_configs]
 
   variables {
     module_configs = {
       test = {
-        usage_code             = "AS"
-        sequence_number        = 1
-        source_type            = "image"
-        image_name             = "WIN2025-golden-v1.0"
-        cluster_name           = "HOB-NTX-CL01"
-        subnet_name            = "VLAN-APP-100"
-        num_vcpus_per_socket   = 2
-        memory_size_mib        = 4096
-        os_type                = "windows"
+        usage_code                = "AS"
+        sequence_number           = 1
+        source_type               = "image"
+        image_name                = "WIN2025-golden-v1.0"
+        cluster_name              = "HOB-NTX-CL01"
+        subnet_name               = "VLAN-APP-100"
+        num_vcpus_per_socket      = 2
+        memory_size_mib           = 4096
+        os_type                   = "windows"
         category_business_unit    = "IT"
         category_environment      = "tst"
-        category_criticality      = "P1"  # INVALID — must be Critical/High/Medium/Low
+        category_criticality      = "P1" # INVALID — must be Critical/High/Medium/Low
         category_recharge         = "CC-IT-TST"
         category_primary_function = "ApplicationServer"
         category_application      = "UnitTest"
