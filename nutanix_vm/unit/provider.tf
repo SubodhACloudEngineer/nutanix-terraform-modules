@@ -1,0 +1,15 @@
+terraform {
+  required_providers {
+    nutanix = {
+      source  = "nutanix/nutanix"
+      version = "~> 2.4"
+    }
+  }
+}
+
+provider "nutanix" {
+  username = var.nutanix_username
+  password = var.nutanix_password
+  endpoint = var.nutanix_endpoint
+  insecure = var.nutanix_insecure
+}
