@@ -1,6 +1,6 @@
 module "nutanix_vm" {
   for_each = var.module_configs
-  source   = "../"
+  source   = "../."
 
   UMICORE_LOCATION = var.UMICORE_LOCATION
   UMICORE_PROJECT  = var.UMICORE_PROJECT

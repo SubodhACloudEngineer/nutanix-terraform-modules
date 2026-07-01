@@ -40,23 +40,23 @@ variable "module_configs" {
   type = map(object({
     usage_code           = string
     sequence_number      = number
-    vm_name_override     = optional(string)
+    vm_name_override     = optional(string, null)
     source_type          = string
-    template_name        = optional(string)
-    image_name           = optional(string)
+    template_name        = optional(string, null)
+    image_name           = optional(string, null)
     cluster_name         = string
     subnet_name          = string
     num_vcpus_per_socket = number
     num_cpu_sockets      = optional(number, 1)
     memory_size_mib      = number
-    os_disk_size_gib     = optional(number)
+    os_disk_size_gib     = optional(number, null)
     data_disks = optional(list(object({
       size_gib = number
       label    = string
     })), [])
     os_type             = string
-    sysprep_xml         = optional(string)
-    cloud_init_userdata = optional(string)
+    sysprep_xml         = optional(string, null)
+    cloud_init_userdata = optional(string, null)
     ad_join             = optional(bool, true)
     ad_join_domain      = optional(string, "nucleus.atom.ads")
 

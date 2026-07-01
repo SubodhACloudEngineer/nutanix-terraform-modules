@@ -1,0 +1,52 @@
+UMICORE_LOCATION = "HOB"
+UMICORE_PROJECT  = "NUTANIXDEV"
+environment      = "tst"
+nutanix_username = ""
+nutanix_password = ""
+nutanix_endpoint = ""
+nutanix_insecure = false
+
+module_configs = {
+  test_template_windows = {
+    usage_code                = "AS"
+    sequence_number           = 9001
+    source_type               = "template"
+    template_name             = "WIN2025-golden-v1.0"
+    cluster_name              = "HOB-NTX-CL01"
+    subnet_name               = "VLAN-APP-100"
+    num_vcpus_per_socket      = 2
+    memory_size_mib           = 4096
+    os_type                   = "windows"
+    category_business_unit    = "IT"
+    category_environment      = "tst"
+    category_criticality      = "Low"
+    category_recharge         = "CC-IT-TST"
+    category_primary_function = "ApplicationServer"
+    category_application      = "UnitTest"
+    category_description      = "Unit test VM - template path"
+    category_bu_responsible   = "infra-test@umicore.com"
+    category_it_responsible   = "infra-team@umicore.com"
+    category_backup           = "None"
+  }
+  test_image_linux = {
+    usage_code                = "AS"
+    sequence_number           = 9002
+    source_type               = "image"
+    image_name                = "RHEL9-golden-v1.0"
+    cluster_name              = "HOB-NTX-CL01"
+    subnet_name               = "VLAN-APP-100"
+    num_vcpus_per_socket      = 1
+    memory_size_mib           = 2048
+    os_type                   = "linux"
+    category_business_unit    = "IT"
+    category_environment      = "tst"
+    category_criticality      = "Low"
+    category_recharge         = "CC-IT-TST"
+    category_primary_function = "ApplicationServer"
+    category_application      = "UnitTest"
+    category_description      = "Unit test VM - image path"
+    category_bu_responsible   = "infra-test@umicore.com"
+    category_it_responsible   = "infra-team@umicore.com"
+    category_backup           = "None"
+  }
+}
