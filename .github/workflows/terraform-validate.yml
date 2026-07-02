@@ -1,6 +1,8 @@
 name: Terraform Validate
 
 on:
+  workflow_dispatch: # enables manual "Run workflow" from the GitHub Actions UI
+
   pull_request:
     branches: [main]
     paths:
