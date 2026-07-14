@@ -88,7 +88,8 @@ stages:
             inputs:
               command: publish
               publishDirectory: '$(Build.ArtifactStagingDirectory)'
-              vstsFeedPublish: 'f17fd793-4867-4acc-b07f-0467685b3b92'
+              # Feed name resolves to the TerraformModules.Nutanix Azure Artifacts feed.
+              vstsFeedPublish: '{TerraformModules.Nutanix}'
               vstsFeedPackagePublish: '$(modulename)'
               versionOption: custom
               versionPublish: '$(moduleversion)'

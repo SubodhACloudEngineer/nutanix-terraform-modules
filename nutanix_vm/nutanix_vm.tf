@@ -113,3 +113,43 @@ resource "nutanix_deploy_templates_v2" "this" {
   # Terraform rejects ignore_changes entries that name a non-existent
   # attribute.
 }
+
+# KNOWN LIMITATION: nutanix_deploy_templates_v2 in provider v2.4 does not
+# support applying Nutanix categories during deployment via
+# override_vm_config_map. This is a critical gap because the Backup category
+# drives Veeam VBR 13 job assignment automatically.
+#
+# Post-deploy category assignment scaffold — COMMENTED OUT pending provider
+# schema verification. The Nutanix provider v2.4 does not expose a
+# "nutanix_vm" resource or data source type; the correct types are
+# "nutanix_virtual_machine" (resource) and "nutanix_virtual_machine"
+# (data source). However, nutanix_virtual_machine cannot adopt an existing
+# VM by UUID without `terraform import` — it would create a second VM on apply.
+#
+# Recommended remediation paths (choose one):
+#   A) Import the template-deployed VM into state and manage it:
+#        terraform import 'module.<key>.nutanix_virtual_machine.categories_post_deploy[0]' <vm_uuid>
+#   B) Apply categories via the Prism Central v3 API in a post-deployment
+#      pipeline step (curl to /vms/{uuid} PATCH with category_list).
+#   C) Wait for a future provider version where nutanix_deploy_templates_v2
+#      override_vm_config_map exposes a categories block.
+#
+# resource "nutanix_virtual_machine" "categories_post_deploy" {
+#   count        = local.use_template_path ? 1 : 0
+#   name         = local.vm_name
+#   cluster_uuid = data.nutanix_cluster.this.metadata.uuid
+#
+#   dynamic "categories" {
+#     for_each = local.vm_categories
+#     content {
+#       name  = categories.key
+#       value = categories.value
+#     }
+#   }
+#
+#   lifecycle {
+#     ignore_changes = [num_vcpus_per_socket, num_sockets, memory_size_mib, disk_list, nic_list]
+#   }
+#
+#   depends_on = [nutanix_deploy_templates_v2.this]
+# }
