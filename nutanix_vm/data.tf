@@ -21,3 +21,17 @@ data "nutanix_templates_v2" "this" {
 
   filter = "templateName eq '${var.template_name}'"
 }
+
+# Post-template-deployment VM lookup.
+# nutanix_virtual_machine is the correct v2.4 data source (nutanix_vm does not exist).
+# The vm_uuid output attribute path on nutanix_deploy_templates_v2 must be confirmed
+# against the real provider schema; the name below is a placeholder.
+# TODO: verify nutanix_deploy_templates_v2.this[0].id (or equivalent) attribute against
+# provider v2.4 schema before enabling this data source.
+#
+# data "nutanix_virtual_machine" "template_deployed" {
+#   count  = local.use_template_path ? 1 : 0
+#   vm_id  = nutanix_deploy_templates_v2.this[0].id   # placeholder — verify attribute name
+#
+#   depends_on = [nutanix_deploy_templates_v2.this]
+# }
