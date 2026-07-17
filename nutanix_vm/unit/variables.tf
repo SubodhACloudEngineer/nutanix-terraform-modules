@@ -38,18 +38,19 @@ variable "nutanix_insecure" {
 
 variable "module_configs" {
   type = map(object({
-    usage_code           = string
-    sequence_number      = number
-    vm_name_override     = optional(string, null)
-    source_type          = string
-    template_name        = optional(string, null)
-    image_name           = optional(string, null)
-    cluster_name         = string
-    subnet_name          = string
-    num_vcpus_per_socket = number
-    num_cpu_sockets      = optional(number, 1)
-    memory_size_mib      = number
-    os_disk_size_gib     = optional(number, null)
+    usage_code             = string
+    sequence_number        = number
+    vm_name_override       = optional(string, null)
+    source_type            = string
+    template_name          = optional(string, null)
+    image_name             = optional(string, null)
+    cluster_name           = string
+    subnet_name            = string
+    num_vcpus_per_socket   = number
+    num_cpu_sockets        = optional(number, 1)
+    memory_size_mib        = number
+    boot_device_order_list = optional(list(string), ["DISK", "CDROM", "NETWORK"])
+    os_disk_size_gib       = optional(number, null)
     data_disks = optional(list(object({
       size_gib = number
       label    = string

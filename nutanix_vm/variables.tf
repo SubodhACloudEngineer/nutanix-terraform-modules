@@ -125,6 +125,27 @@ variable "memory_size_mib" {
 
 ### Storage ###
 
+variable "boot_device_order_list" {
+  description = <<-EOT
+    Ordered list of boot devices for the VM. AHV tries each device in order at boot time.
+    Valid values: "DISK", "CDROM", "NETWORK".
+    Default: ["DISK", "CDROM", "NETWORK"] — boots from disk first, CD-ROM second, PXE last.
+    Override to ["NETWORK", "DISK"] for PXE provisioning flows.
+    Only applied on the image path (nutanix_virtual_machine). The template path
+    (nutanix_deploy_templates_v2) inherits boot order from the source template.
+  EOT
+  type        = list(string)
+  default     = ["DISK", "CDROM", "NETWORK"]
+  nullable    = false
+
+  validation {
+    condition = alltrue([
+      for d in var.boot_device_order_list : contains(["DISK", "CDROM", "NETWORK"], d)
+    ])
+    error_message = "Each entry in boot_device_order_list must be one of: DISK, CDROM, NETWORK."
+  }
+}
+
 variable "os_disk_size_gib" {
   description = "Optional OS disk size override in GiB. When null, the disk size from the source template or image is used as-is."
   type        = number

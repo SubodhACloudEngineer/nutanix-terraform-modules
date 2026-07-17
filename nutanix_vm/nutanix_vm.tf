@@ -2,11 +2,12 @@
 resource "nutanix_virtual_machine" "this" {
   count = local.use_image_path ? 1 : 0
 
-  name                 = local.vm_name
-  cluster_uuid         = data.nutanix_cluster.this.metadata.uuid
-  num_vcpus_per_socket = var.num_vcpus_per_socket
-  num_sockets          = var.num_cpu_sockets
-  memory_size_mib      = var.memory_size_mib
+  name                   = local.vm_name
+  cluster_uuid           = data.nutanix_cluster.this.metadata.uuid
+  num_vcpus_per_socket   = var.num_vcpus_per_socket
+  num_sockets            = var.num_cpu_sockets
+  memory_size_mib        = var.memory_size_mib
+  boot_device_order_list = var.boot_device_order_list
 
   disk_list {
     data_source_reference = {
