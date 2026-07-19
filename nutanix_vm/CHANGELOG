@@ -1,3 +1,22 @@
+## [Unreleased]
+### Changed
+- Image path migrated from the v3 API resource `nutanix_virtual_machine`
+  to the v4 API resource `nutanix_virtual_machine_v2`. Attribute mapping:
+  `cluster_uuid` -> `cluster { ext_id }`, `num_vcpus_per_socket` ->
+  `num_cores_per_socket`, `memory_size_mib` -> `memory_size_bytes`,
+  `boot_device_order_list` -> `boot_config { legacy_boot { boot_order } }`,
+  `disk_list` -> `disks { backing_info { vm_disk { ... } } }`, `nic_list` ->
+  `nics { network_info { subnet { ext_id } } }`. The module's public variable
+  interface is unchanged.
+- Data sources migrated to v4 list endpoints: `nutanix_cluster` ->
+  `nutanix_clusters_v2`, `nutanix_subnet` -> `nutanix_subnets_v2`,
+  `nutanix_image` -> `nutanix_images_v2` (filtered by name via OData).
+### Added
+- `nutanix_categories_v2` data source lookups to resolve each mandatory
+  category (and extra_tags) name/value pair to its ext_id (UUID), which the
+  v4 `nutanix_virtual_machine_v2` `categories` block requires in place of the
+  v3 name/value pairs.
+
 ## [1.0.0] - June 2026
 ### Added
 - Initial release of the nutanix_vm Terraform module

@@ -71,7 +71,7 @@ variable "source_type" {
     'template' — deploys from a Prism Central VM Template using the nutanix_deploy_templates_v2
       resource (template path). Use for standard Windows Server and RHEL VMs.
     'image'    — clones from an image in the Prism Central Image Service using the
-      nutanix_virtual_machine resource (image path). Use for appliances or post-Move migrated VMs.
+      nutanix_virtual_machine_v2 resource (image path). Use for appliances or post-Move migrated VMs.
   EOT
   type        = string
 
@@ -131,7 +131,8 @@ variable "boot_device_order_list" {
     Valid values: "DISK", "CDROM", "NETWORK".
     Default: ["DISK", "CDROM", "NETWORK"] — boots from disk first, CD-ROM second, PXE last.
     Override to ["NETWORK", "DISK"] for PXE provisioning flows.
-    Only applied on the image path (nutanix_virtual_machine). The template path
+    Only applied on the image path (nutanix_virtual_machine_v2), via
+    boot_config.legacy_boot.boot_order. The template path
     (nutanix_deploy_templates_v2) inherits boot order from the source template.
   EOT
   type        = list(string)

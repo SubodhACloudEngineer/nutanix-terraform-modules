@@ -18,35 +18,50 @@
 #   - Whether NGT/Sysprep runs correctly on first boot
 
 mock_provider "nutanix" {
-  mock_data "nutanix_cluster" {
+  # v4 cluster lookup (plural list data source).
+  mock_data "nutanix_clusters_v2" {
     defaults = {
-      id   = "00000000-0000-0000-0000-000000000001"
-      name = "HOB-NTX-CL01"
-      metadata = {
-        uuid = "00000000-0000-0000-0000-000000000001"
-        kind = "cluster"
-      }
+      cluster_entities = [
+        {
+          ext_id = "00000000-0000-0000-0000-000000000001"
+          name   = "HOB-NTX-CL01"
+        }
+      ]
     }
   }
-  mock_data "nutanix_subnet" {
+  # v4 subnet lookup (plural list data source).
+  mock_data "nutanix_subnets_v2" {
     defaults = {
-      id   = "00000000-0000-0000-0000-000000000002"
-      name = "VLAN-APP-100"
-      metadata = {
-        uuid = "00000000-0000-0000-0000-000000000002"
-        kind = "subnet"
-      }
+      subnets = [
+        {
+          ext_id = "00000000-0000-0000-0000-000000000002"
+          name   = "VLAN-APP-100"
+        }
+      ]
     }
   }
-  # Used by image path (source_type = "image")
-  mock_data "nutanix_image" {
+  # v4 image lookup, used by image path (source_type = "image").
+  mock_data "nutanix_images_v2" {
     defaults = {
-      id   = "00000000-0000-0000-0000-000000000003"
-      name = "WIN2025-golden-v1.0"
-      metadata = {
-        uuid = "00000000-0000-0000-0000-000000000003"
-        kind = "image"
-      }
+      images = [
+        {
+          ext_id = "00000000-0000-0000-0000-000000000003"
+          name   = "WIN2025-golden-v1.0"
+        }
+      ]
+    }
+  }
+  # v4 category UUID resolution. Every nutanix_categories_v2 lookup (one per
+  # category key/value pair on the image path) returns this single mock ext_id.
+  mock_data "nutanix_categories_v2" {
+    defaults = {
+      categories = [
+        {
+          ext_id = "00000000-0000-0000-0000-000000000005"
+          key    = "MockKey"
+          value  = "MockValue"
+        }
+      ]
     }
   }
   # Used by template path (source_type = "template")

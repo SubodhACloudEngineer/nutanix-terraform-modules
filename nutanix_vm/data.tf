@@ -1,19 +1,38 @@
-data "nutanix_cluster" "this" {
-  name = var.cluster_name
+# Cluster lookup. v4 exposes only a plural list data source, so filter the
+# list endpoint on name (OData) and index into the single match. Used by both
+# the image path (nutanix_virtual_machine_v2) and the template path
+# (nutanix_deploy_templates_v2 cluster_reference).
+data "nutanix_clusters_v2" "this" {
+  filter = "name eq '${var.cluster_name}'"
 }
 
-data "nutanix_subnet" "this" {
-  subnet_name = var.subnet_name
+# Subnet lookup, image path only in practice. v4 exposes only a plural list
+# data source; filter on name and index into the single match.
+data "nutanix_subnets_v2" "this" {
+  filter = "name eq '${var.subnet_name}'"
 }
 
-# Image Service lookup, image path only.
-data "nutanix_image" "this" {
+# Image Service lookup, image path only. v4 exposes only a plural list data
+# source; filter on name (OData) and index into the single match.
+data "nutanix_images_v2" "this" {
   count = var.source_type == "image" ? 1 : 0
 
-  image_name = var.image_name
+  filter = "name eq '${var.image_name}'"
 }
 
-# VM Template lookup, template path only. v2 API has no singular by-name
+# Category UUID resolution, image path only.
+# nutanix_virtual_machine_v2 requires each applied category as an ext_id (UUID),
+# not a name/value pair. There is no singular by-name lookup, so resolve every
+# (key, value) pair in local.vm_categories through the plural list data source,
+# filtering on key + value and indexing into the single match. One lookup per
+# category (~10 mandatory + any extra_tags) is issued at plan time.
+data "nutanix_categories_v2" "this" {
+  for_each = local.use_image_path ? local.vm_categories : {}
+
+  filter = "key eq '${each.key}' and value eq '${each.value}'"
+}
+
+# VM Template lookup, template path only. v4 API has no singular by-name
 # data source, so filter the list endpoint on templateName (OData) and
 # index into the single match in nutanix_vm.tf.
 data "nutanix_templates_v2" "this" {
@@ -21,17 +40,3 @@ data "nutanix_templates_v2" "this" {
 
   filter = "templateName eq '${var.template_name}'"
 }
-
-# Post-template-deployment VM lookup.
-# nutanix_virtual_machine is the correct v2.4 data source (nutanix_vm does not exist).
-# The vm_uuid output attribute path on nutanix_deploy_templates_v2 must be confirmed
-# against the real provider schema; the name below is a placeholder.
-# TODO: verify nutanix_deploy_templates_v2.this[0].id (or equivalent) attribute against
-# provider v2.4 schema before enabling this data source.
-#
-# data "nutanix_virtual_machine" "template_deployed" {
-#   count  = local.use_template_path ? 1 : 0
-#   vm_id  = nutanix_deploy_templates_v2.this[0].id   # placeholder — verify attribute name
-#
-#   depends_on = [nutanix_deploy_templates_v2.this]
-# }
