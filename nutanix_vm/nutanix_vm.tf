@@ -1,62 +1,97 @@
-# Image path: clone from an Image Service image via the v1 resource.
-resource "nutanix_virtual_machine" "this" {
+# Image path: clone from an Image Service image via the v4 (v2 resource) API.
+resource "nutanix_virtual_machine_v2" "this" {
   count = local.use_image_path ? 1 : 0
 
-  name                   = local.vm_name
-  cluster_uuid           = data.nutanix_cluster.this.metadata.uuid
-  num_vcpus_per_socket   = var.num_vcpus_per_socket
-  num_sockets            = var.num_cpu_sockets
-  memory_size_mib        = var.memory_size_mib
-  boot_device_order_list = var.boot_device_order_list
+  name                 = local.vm_name
+  num_sockets          = var.num_cpu_sockets
+  num_cores_per_socket = var.num_vcpus_per_socket
+  memory_size_bytes    = var.memory_size_mib * 1024 * 1024
 
-  disk_list {
-    data_source_reference = {
-      kind = "image"
-      uuid = data.nutanix_image.this[0].metadata.uuid
+  cluster {
+    ext_id = data.nutanix_clusters_v2.this.cluster_entities[0].ext_id
+  }
+
+  boot_config {
+    legacy_boot {
+      boot_order = var.boot_device_order_list
     }
+  }
 
-    disk_size_mib = var.os_disk_size_gib != null ? var.os_disk_size_gib * 1024 : null
-
-    device_properties {
-      device_type = "DISK"
-      disk_address = {
-        device_index = 0
-        adapter_type = "SCSI"
+  # OS disk, cloned from the Image Service image.
+  disks {
+    disk_address {
+      bus_type = "SCSI"
+      index    = 0
+    }
+    backing_info {
+      vm_disk {
+        data_source {
+          reference {
+            image_reference {
+              image_ext_id = data.nutanix_images_v2.this[0].images[0].ext_id
+            }
+          }
+        }
+        # disk_size_bytes overrides the source image disk size when set.
+        disk_size_bytes = var.os_disk_size_gib != null ? var.os_disk_size_gib * 1024 * 1024 * 1024 : null
       }
     }
   }
 
-  dynamic "disk_list" {
+  # Additional data disks, blank-provisioned on the SCSI bus after the OS disk.
+  dynamic "disks" {
     for_each = var.data_disks
     content {
-      disk_size_mib = disk_list.value.size_gib * 1024
-
-      device_properties {
-        device_type = "DISK"
-        disk_address = {
-          device_index = disk_list.key + 1
-          adapter_type = "SCSI"
+      disk_address {
+        bus_type = "SCSI"
+        index    = disks.key + 1
+      }
+      backing_info {
+        vm_disk {
+          disk_size_bytes = disks.value.size_gib * 1024 * 1024 * 1024
         }
       }
     }
   }
 
-  nic_list {
-    subnet_uuid = data.nutanix_subnet.this.metadata.uuid
-  }
-
-  dynamic "categories" {
-    for_each = local.vm_categories
-    content {
-      name  = categories.key
-      value = categories.value
+  nics {
+    nic_network_info {
+      virtual_ethernet_nic_network_info {
+        nic_type  = "NORMAL_NIC"
+        vlan_mode = "ACCESS"
+        subnet {
+          ext_id = data.nutanix_subnets_v2.this.subnets[0].ext_id
+        }
+      }
     }
   }
 
-  # guest_customization_sysprep is not exposed on nutanix_virtual_machine in
-  # provider v2.4 — sysprep is only supported via the template path resource.
-  # cloud-init: flat attribute on this resource, not a nested block.
-  guest_customization_cloud_init_user_data = local.apply_cloud_init ? base64encode(var.cloud_init_userdata) : null
+  # v4 applies categories by ext_id (UUID). local.vm_categories is the
+  # name/value map; the ext_ids are resolved in data.tf via
+  # nutanix_categories_v2 keyed by the same category name.
+  dynamic "categories" {
+    for_each = local.vm_categories
+    content {
+      ext_id = data.nutanix_categories_v2.this[categories.key].categories[0].ext_id
+    }
+  }
+
+  # cloud-init guest customisation (linux). Sysprep for the image path is not
+  # wired here — Windows guest customisation remains a template-path feature.
+  dynamic "guest_customization" {
+    for_each = local.apply_cloud_init ? [1] : []
+    content {
+      config {
+        cloud_init {
+          cloud_init_script {
+            user_data {
+              value = base64encode(var.cloud_init_userdata)
+            }
+          }
+        }
+      }
+    }
+  }
 
   lifecycle {
     ignore_changes = [categories]
@@ -69,7 +104,7 @@ resource "nutanix_deploy_templates_v2" "this" {
 
   ext_id            = data.nutanix_templates_v2.this[0].templates[0].ext_id
   number_of_vms     = 1
-  cluster_reference = data.nutanix_cluster.this.metadata.uuid
+  cluster_reference = data.nutanix_clusters_v2.this.cluster_entities[0].ext_id
 
   override_vm_config_map {
     name                 = local.vm_name
@@ -120,37 +155,13 @@ resource "nutanix_deploy_templates_v2" "this" {
 # override_vm_config_map. This is a critical gap because the Backup category
 # drives Veeam VBR 13 job assignment automatically.
 #
-# Post-deploy category assignment scaffold — COMMENTED OUT pending provider
-# schema verification. The Nutanix provider v2.4 does not expose a
-# "nutanix_vm" resource or data source type; the correct types are
-# "nutanix_virtual_machine" (resource) and "nutanix_virtual_machine"
-# (data source). However, nutanix_virtual_machine cannot adopt an existing
-# VM by UUID without `terraform import` — it would create a second VM on apply.
-#
-# Recommended remediation paths (choose one):
-#   A) Import the template-deployed VM into state and manage it:
-#        terraform import 'module.<key>.nutanix_virtual_machine.categories_post_deploy[0]' <vm_uuid>
-#   B) Apply categories via the Prism Central v3 API in a post-deployment
-#      pipeline step (curl to /vms/{uuid} PATCH with category_list).
+# The image path above now applies categories natively via
+# nutanix_virtual_machine_v2 (categories { ext_id }). The template path still
+# needs an out-of-band step. Recommended remediation paths (choose one):
+#   A) Import the template-deployed VM into state as a
+#      nutanix_virtual_machine_v2 resource and manage its categories:
+#        terraform import 'module.<key>.nutanix_virtual_machine_v2.categories_post_deploy[0]' <vm_uuid>
+#   B) Apply categories via the Prism Central v4 API in a post-deployment
+#      pipeline step (PATCH the VM with the resolved category ext_ids).
 #   C) Wait for a future provider version where nutanix_deploy_templates_v2
 #      override_vm_config_map exposes a categories block.
-#
-# resource "nutanix_virtual_machine" "categories_post_deploy" {
-#   count        = local.use_template_path ? 1 : 0
-#   name         = local.vm_name
-#   cluster_uuid = data.nutanix_cluster.this.metadata.uuid
-#
-#   dynamic "categories" {
-#     for_each = local.vm_categories
-#     content {
-#       name  = categories.key
-#       value = categories.value
-#     }
-#   }
-#
-#   lifecycle {
-#     ignore_changes = [num_vcpus_per_socket, num_sockets, memory_size_mib, disk_list, nic_list]
-#   }
-#
-#   depends_on = [nutanix_deploy_templates_v2.this]
-# }

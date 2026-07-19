@@ -4,19 +4,25 @@ output "vm_name" {
 }
 
 output "vm_uuid" {
-  description = "UUID of the provisioned VM in Prism Central. Use this for terraform import operations and for referencing the VM in other Nutanix resources."
+  description = "UUID (ext_id) of the provisioned VM in Prism Central. Use this for terraform import operations and for referencing the VM in other Nutanix resources."
   value = coalesce(
-    try(nutanix_virtual_machine.this[0].id, null),
+    try(nutanix_virtual_machine_v2.this[0].ext_id, null),
     try(nutanix_deploy_templates_v2.this[0].id, null),
   )
 }
 
 output "vm_ip" {
-  description = "Primary IP address of the provisioned VM. Populated once Nutanix Guest Tools (NGT) reports the IP back to Prism Central after first boot. May be null immediately after apply if the VM has not yet completed first boot."
-  value = try(
-    nutanix_virtual_machine.this[0].nic_list_status[0].ip_endpoint_list[0].ip,
-    null,
-  )
+  description = <<-EOT
+    Primary IP address of the provisioned VM, once Nutanix Guest Tools (NGT)
+    reports it back to Prism Central after first boot.
+    NOTE: the exact computed attribute path for the learned IP on
+    nutanix_virtual_machine_v2 is not exercised by the provider's acceptance
+    tests and cannot be confirmed without a real apply. It is therefore left as
+    null pending the Sprint 4 integration test, at which point the confirmed
+    path (expected under nics[].nic_network_info[].virtual_ethernet_nic_network_info[].ipv4_info)
+    will be wired in. The output is kept so the module contract is stable.
+  EOT
+  value       = null
 }
 
 output "source_type_used" {

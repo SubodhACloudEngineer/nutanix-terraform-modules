@@ -6,8 +6,8 @@ This module provisions virtual machines on Nutanix AHV via Prism Central.
 It supports two provisioning paths controlled by the `source_type` variable:
 `"template"` deploys a VM from a Prism Central VM Template using the
 `nutanix_deploy_templates_v2` resource, while `"image"` clones from an Image
-Service image using `nutanix_virtual_machine`. Both paths share a common
-variable interface. The module enforces all 10 mandatory Nutanix categories
+Service image using `nutanix_virtual_machine_v2` (the v4 API resource). Both
+paths share a common variable interface. The module enforces all 10 mandatory Nutanix categories
 defined in the Umicore HLD as required inputs, builds a consistent VM name
 from the site code, usage code, and sequence number, and supports optional
 guest customisation via Sysprep (Windows) or cloud-init (Linux).
