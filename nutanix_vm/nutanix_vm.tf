@@ -93,9 +93,16 @@ resource "nutanix_virtual_machine_v2" "this" {
     }
   }
 
-  lifecycle {
-    ignore_changes = [categories]
-  }
+  # NOTE: lifecycle.ignore_changes = [categories] was previously set here and
+  # has been REMOVED. It suppressed all post-creation category drift, which
+  # meant a change to Umi_Backup in tfvars would never reach Prism Central and
+  # the VM would silently stay on its original Veeam tier forever. Categories
+  # must be manageable after creation.
+  #
+  # If a permanent diff appears on the categories block after the first real
+  # apply, that is an ordering problem to diagnose (the provider may return
+  # categories in a different order than declared) — not something to suppress.
+  # Raise it rather than reinstating this block.
 }
 
 # Template path: deploy from a Prism Central VM Template via the v2 resource.

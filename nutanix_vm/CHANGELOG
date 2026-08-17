@@ -1,21 +1,58 @@
-## [Unreleased]
-### Changed
+## [2.0.0] - August 2026
+### Changed — BREAKING
 - Image path migrated from the v3 API resource `nutanix_virtual_machine`
   to the v4 API resource `nutanix_virtual_machine_v2`. Attribute mapping:
   `cluster_uuid` -> `cluster { ext_id }`, `num_vcpus_per_socket` ->
   `num_cores_per_socket`, `memory_size_mib` -> `memory_size_bytes`,
   `boot_device_order_list` -> `boot_config { legacy_boot { boot_order } }`,
   `disk_list` -> `disks { backing_info { vm_disk { ... } } }`, `nic_list` ->
-  `nics { network_info { subnet { ext_id } } }`. The module's public variable
-  interface is unchanged.
+  `nics { nic_network_info { virtual_ethernet_nic_network_info { subnet
+  { ext_id } } } }`. The module's public variable interface is unchanged,
+  but the resource address changes, so existing state requires
+  `terraform state mv` or re-import. Released as 2.0.0 for that reason.
 - Data sources migrated to v4 list endpoints: `nutanix_cluster` ->
   `nutanix_clusters_v2`, `nutanix_subnet` -> `nutanix_subnets_v2`,
   `nutanix_image` -> `nutanix_images_v2` (filtered by name via OData).
+- Category keys migrated to the live Umicore Prism Central schema. All ten
+  mandatory categories are now `Umi_`-prefixed (`Umi_BusinessUnit`,
+  `Umi_Environment`, `Umi_Criticality`, `Umi_Recharge`,
+  `Umi_PrimaryFunction`, `Umi_Application`, `Umi_Description`,
+  `Umi_BUResponsible`, `Umi_ITResponsible`, `Umi_Backup`). The previous
+  unprefixed names did not exist in Prism Central and failed at plan time.
+- Provider constraint pinned to exactly `2.4.2`. The previous `~> 2.4`
+  range could resolve to 2.4.1, which upstream marks "Invalid Release".
+  2.4.2 is also the first release supporting `api_key` authentication.
+- Enum validations removed from `category_environment`, `category_criticality`
+  and `category_backup` in favour of non-empty checks. The hardcoded enums
+  (Gold/Silver/Bronze/None; prd/tst/acc/dev; Critical/High/Medium/Low) did
+  not match the live Prism Central schema and blocked every plan. Prism
+  Central is now the authoritative source of valid values; an invalid value
+  fails at plan time when the category lookup returns no match.
+
 ### Added
 - `nutanix_categories_v2` data source lookups to resolve each mandatory
   category (and extra_tags) name/value pair to its ext_id (UUID), which the
   v4 `nutanix_virtual_machine_v2` `categories` block requires in place of the
-  v3 name/value pairs.
+  v3 name/value pairs. One lookup per category is issued at plan time.
+- `vm_ip` output now attempts to read the learned guest IP instead of
+  returning a hardcoded null. Wrapped in `try()` across candidate attribute
+  paths so a wrong path degrades to null rather than failing the plan. The
+  correct path is to be confirmed by the first real apply and then collapsed
+  to a single expression.
+
+### Removed
+- `lifecycle { ignore_changes = [categories] }` on
+  `nutanix_virtual_machine_v2`. This froze categories at creation time,
+  meaning a change to `Umi_Backup` would never reach Prism Central and the
+  VM would remain on its original Veeam tier indefinitely with no error.
+
+### Known limitations
+- Template path (`nutanix_deploy_templates_v2`) still cannot apply
+  categories. Confirmed against the 2.4.2 provider binary:
+  `override_vm_config_map` exposes no categories argument. Because
+  `Umi_Backup` drives Veeam job assignment, template-deployed VMs require an
+  out-of-band category step. See the remediation options documented in
+  `nutanix_vm.tf`.
 
 ## [1.0.0] - June 2026
 ### Added
