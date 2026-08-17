@@ -385,23 +385,23 @@ run "all_10_mandatory_categories_present" {
   }
 
   assert {
-    condition     = module.nutanix_vm["test"].categories_applied["Backup"] == "Gold"
-    error_message = "Backup category should be Gold"
+    condition     = module.nutanix_vm["test"].categories_applied["Umi_Backup"] == "Gold"
+    error_message = "Umi_Backup category should be Gold"
   }
 
   assert {
-    condition     = module.nutanix_vm["test"].categories_applied["Environment"] == "prd"
-    error_message = "Environment category should be prd"
+    condition     = module.nutanix_vm["test"].categories_applied["Umi_Environment"] == "prd"
+    error_message = "Umi_Environment category should be prd"
   }
 
   assert {
-    condition     = module.nutanix_vm["test"].categories_applied["BusinessUnit"] == "Manufacturing"
-    error_message = "BusinessUnit category incorrect"
+    condition     = module.nutanix_vm["test"].categories_applied["Umi_BusinessUnit"] == "Manufacturing"
+    error_message = "Umi_BusinessUnit category incorrect"
   }
 
   assert {
-    condition     = module.nutanix_vm["test"].categories_applied["Criticality"] == "High"
-    error_message = "Criticality category incorrect"
+    condition     = module.nutanix_vm["test"].categories_applied["Umi_Criticality"] == "High"
+    error_message = "Umi_Criticality category incorrect"
   }
 }
 
