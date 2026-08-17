@@ -225,22 +225,40 @@ variable "category_business_unit" {
 }
 
 variable "category_environment" {
-  description = "Nutanix category Environment. Must match the 'environment' variable value. Drives change management gates and RBAC scope."
+  description = <<-EOT
+    Value for the Umi_Environment Nutanix category. Must be a value that
+    already exists under Umi_Environment in Prism Central (e.g. Development,
+    Production) — the module resolves key+value to an ext_id and fails at
+    plan time if the pair does not exist.
+
+    NOTE: this is deliberately NOT constrained to the same set as the
+    `environment` variable. Per Umicore, all clusters are production
+    hardware; `environment` describes the deployment tier for pipeline
+    gating, whereas Umi_Environment describes the workload classification.
+    They are related but not identical, and enforcing equality here would be
+    wrong.
+  EOT
   type        = string
 
   validation {
-    condition     = contains(["prd", "tst", "acc", "dev"], var.category_environment)
-    error_message = "category_environment must be one of: 'prd', 'tst', 'acc', 'dev'."
+    condition     = length(trimspace(var.category_environment)) > 0
+    error_message = "category_environment must not be empty."
   }
 }
 
 variable "category_criticality" {
-  description = "Nutanix category Criticality. Defines workload importance. Drives incident priority and DR tier assignment."
+  description = <<-EOT
+    Value for the Umi_Criticality Nutanix category. Defines workload
+    importance; drives incident priority and DR tier assignment.
+    Must already exist as a value under Umi_Criticality in Prism Central.
+    No enum is enforced here — the authoritative list lives in Prism Central
+    and a hardcoded enum drifts silently when Umicore adds a value.
+  EOT
   type        = string
 
   validation {
-    condition     = contains(["Critical", "High", "Medium", "Low"], var.category_criticality)
-    error_message = "category_criticality must be one of: 'Critical', 'High', 'Medium', 'Low'."
+    condition     = length(trimspace(var.category_criticality)) > 0
+    error_message = "category_criticality must not be empty."
   }
 }
 
@@ -276,18 +294,34 @@ variable "category_it_responsible" {
 
 variable "category_backup" {
   description = <<-EOT
-    Nutanix category Backup. CRITICAL — drives Veeam VBR 13 backup job tier assignment
-    automatically. Veeam queries Prism Central for VMs by this category value.
-    Gold   = daily backup + offsite copy
-    Silver = daily backup
-    Bronze = weekly backup
-    None   = excluded from backup (requires explicit justification)
+    Value for the Umi_Backup Nutanix category.
+
+    CRITICAL — this drives Veeam VBR 13 backup job assignment automatically.
+    Veeam queries Prism Central for VMs carrying this category and places them
+    into the matching job. An incorrect value here means the VM is backed up
+    to the wrong schedule, or not at all, with no error surfaced anywhere in
+    Terraform.
+
+    Values are site-specific and defined in Prism Central under Umi_Backup
+    (e.g. UMI-NoBackup for workloads explicitly excluded from backup, and
+    site-prefixed tier values such as FLO-* and WOL-*). Confirm the exact
+    value list against Prism Central before use:
+
+      curl -k -H "X-ntnx-api-key: $apiKey" \
+        "https://prismcentral-emea.atom.ads:9440/api/prism/v4.0/config/categories?%24limit=100"
+
+    No enum is enforced here deliberately: the previous Gold/Silver/Bronze/None
+    enum did not match the live schema and blocked all plans. Prism Central is
+    the authoritative source, and an invalid value fails at plan time when the
+    category lookup returns no match.
+
+    Selecting a no-backup value requires explicit justification in the PR.
   EOT
   type        = string
 
   validation {
-    condition     = contains(["Gold", "Silver", "Bronze", "None"], var.category_backup)
-    error_message = "category_backup must be one of: 'Gold', 'Silver', 'Bronze', 'None'. This drives Veeam VBR 13 job assignment."
+    condition     = length(trimspace(var.category_backup)) > 0
+    error_message = "category_backup must not be empty. This drives Veeam VBR 13 job assignment."
   }
 }
 

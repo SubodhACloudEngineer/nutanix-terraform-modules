@@ -13,14 +13,26 @@ output "vm_uuid" {
 
 output "vm_ip" {
   description = <<-EOT
-    Primary IP address of the provisioned VM, once Nutanix Guest Tools (NGT)
-    reports it back to Prism Central after first boot.
-    NOTE: the exact computed attribute path for the learned IP on
-    nutanix_virtual_machine_v2 is not exercised by the provider's acceptance
-    tests and cannot be confirmed without a real apply. It is therefore left as
-    null pending the Sprint 4 integration test, at which point the confirmed
-    path (expected under nics[].nic_network_info[].virtual_ethernet_nic_network_info[].ipv4_info)
-    will be wired in. The output is kept so the module contract is stable.
+    Primary IPv4 address of the provisioned VM, learned from the guest once
+    the NIC has an address.
+
+    CURRENTLY RETURNS NULL BY DESIGN. The exact computed attribute path for
+    the learned IP on nutanix_virtual_machine_v2 is not exercised by the
+    provider's acceptance tests and cannot be confirmed without a real apply.
+    The 2.4.2 provider binary contains both `nic_network_info` and
+    `network_info` shapes alongside `ipv4_info`, `ipv4_config` and
+    `learned_ip_addresses`, so guessing is not safe: a reference to an
+    attribute that does not exist in the schema is a STATIC error that
+    try() cannot suppress, and it would fail `terraform validate` for every
+    consumer of this module.
+
+    TO RESOLVE (first real apply, see Step 4 of the apply test plan):
+      terraform show -json | jq '.values.root_module.child_modules[].resources[]
+        | select(.type=="nutanix_virtual_machine_v2") | .values.nics'
+    Read the actual returned structure, then replace the null below with the
+    single confirmed path and bump the module minor version.
+
+    The output is kept so the module contract stays stable for callers.
   EOT
   value       = null
 }
