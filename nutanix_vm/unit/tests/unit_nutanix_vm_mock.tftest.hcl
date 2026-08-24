@@ -403,6 +403,15 @@ run "all_10_mandatory_categories_present" {
     condition     = module.nutanix_vm["test"].categories_applied["Umi_Criticality"] == "High"
     error_message = "Umi_Criticality category incorrect"
   }
+
+  # Regression guard: UMI_ITResponsible is uppercase "UMI_" by design (matches
+  # live Prism Central). If anyone normalises the casing to "Umi_", this key
+  # disappears from categories_applied and the assertion fails here — before a
+  # real cluster returns an empty category lookup and every plan fails.
+  assert {
+    condition     = module.nutanix_vm["test"].categories_applied["UMI_ITResponsible"] == "infra-team@umicore.com"
+    error_message = "UMI_ITResponsible category must be present with uppercase UMI_ prefix and equal category_it_responsible"
+  }
 }
 
 
