@@ -36,18 +36,18 @@ locals {
   # -- Nutanix categories ---------------------------------------------------
   #
   # Category KEYS below must match the live Prism Central schema exactly.
-  # Umicore uses an "Umi_" prefix. These names are resolved to ext_ids in
-  # data.tf via nutanix_categories_v2, filtering on key + value; a key that
-  # does not exist in Prism Central returns an empty list and fails at plan
-  # time with an index error rather than a helpful message.
+  # These names are resolved to ext_ids in data.tf via nutanix_categories_v2,
+  # filtering on key + value; a key that does not exist in Prism Central
+  # returns an empty list and fails at plan time with an index error rather
+  # than a helpful message.
   #
-  # VERIFY BEFORE FIRST PLAN: Umi_ITResponsible is carried here with the same
-  # "Umi_" casing as the other nine. The demo branch used "UMI_" for this one
-  # key only. Confirm the live casing in Prism Central and correct if needed —
-  # this is the most likely cause of a plan-time failure in this file.
-  #
-  #   curl -k -H "X-ntnx-api-key: $apiKey" \
-  #     "https://prismcentral-emea.atom.ads:9440/api/prism/v4.0/config/categories?%24limit=100"
+  # CASING VERIFIED 2026-08-21 against live Prism Central
+  # (GET /api/prism/v4.0/config/categories): nine of the ten mandatory keys
+  # use the "Umi_" prefix, but UMI_ITResponsible is uppercase "UMI_" by design
+  # in Umicore's schema. Do NOT normalise it to "Umi_" — Prism Central is
+  # authoritative, the mismatched casing makes the lookup return an empty list
+  # and fails every plan at the ext_id index, and changing it here would
+  # require a corresponding Prism Central migration first.
   #
   # extra_tags values take precedence on key clashes (merge() last-wins);
   # in practice extra_tags should not override mandatory categories.
@@ -61,7 +61,7 @@ locals {
       Umi_Application     = var.category_application
       Umi_Description     = var.category_description
       Umi_BUResponsible   = var.category_bu_responsible
-      Umi_ITResponsible   = var.category_it_responsible
+      UMI_ITResponsible   = var.category_it_responsible
       Umi_Backup          = var.category_backup
     },
     var.extra_tags,

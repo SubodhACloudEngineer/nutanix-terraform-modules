@@ -1,3 +1,14 @@
+## [2.0.1] - August 2026
+### Fixed
+- Category key `Umi_ITResponsible` corrected to `UMI_ITResponsible` to match
+  the live Prism Central schema. Nine of the ten mandatory Umicore category
+  keys use the `Umi_` prefix; this one uses uppercase `UMI_`. With the
+  incorrect casing the category lookup returned no results and every plan
+  failed at the ext_id index. Verified against
+  GET /api/prism/v4.0/config/categories on 2026-08-21.
+- Mock unit test now asserts the UMI_ITResponsible key explicitly to prevent
+  the casing being normalised again.
+
 ## [2.0.0] - August 2026
 ### Changed — BREAKING
 - Image path migrated from the v3 API resource `nutanix_virtual_machine`
