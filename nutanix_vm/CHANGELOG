@@ -1,3 +1,45 @@
+## [2.0.3] - September 2026
+### Fixed
+- Added `lifecycle { ignore_changes = [guest_customization, cd_roms] }` to
+  `nutanix_virtual_machine_v2`. Without it the module was not idempotent and
+  every plan against an existing VM proposed destroying and recreating it.
+
+  Two separate causes, both verified against HOB-CL-DEV1:
+
+  1. Prism Central does not return the cloud-init / Sysprep payload on read —
+     `guest_customization` is write-only. Refresh therefore lost it, the block
+     appeared absent from state and present in config, and because the
+     attribute forces replacement, every plan produced `-/+ destroy and then
+     create`.
+  2. AHV automatically attaches a CONFIG_DRIVE_V2 CD-ROM
+     (`iso_type = GUEST_CUSTOMIZATION`) to deliver the cloud-init payload. It
+     appears on read but is never declared in config, so Terraform proposed
+     removing it on every plan. Applying that would detach the config drive
+     from a running VM, and every newly created VM would show the same diff on
+     its first plan.
+
+  Both are semantically create-time-only: guest customisation runs once at
+  first boot, and the config drive is an artefact of it. To rebuild with a new
+  payload, replace the VM explicitly:
+    terraform apply -replace='module.<name>.nutanix_virtual_machine_v2.this[0]'
+
+  This is NOT a reversal of the `ignore_changes = [categories]` removal in
+  2.0.0. Categories are mutable, meaningful after creation, and drive Veeam
+  job assignment — they must stay managed.
+
+- `vm_ip` output corrected to return null rather than a `try()` chain over
+  candidate attribute paths. `try()` only catches dynamic errors; a reference
+  to an attribute that does not exist in the provider schema is a static error
+  and would have failed `terraform validate` for every consumer. Prism Central
+  only reports a learned guest IP when NGT or an equivalent agent is present,
+  and the Rocky GenericCloud image does not ship NGT, so no path would have
+  returned a value regardless.
+
+### Validation
+- Full lifecycle verified against HOB-CL-DEV1 on 2026-09-01: create (5m5s),
+  re-plan showing no changes, category value change applied in place with the
+  VM UUID unchanged, clean destroy, and re-apply with no state residue.
+
 ## [2.0.2] - August 2026
 ### Changed
 - Raised required_version to >= 1.9 to match CCoE Terraform conventions.
