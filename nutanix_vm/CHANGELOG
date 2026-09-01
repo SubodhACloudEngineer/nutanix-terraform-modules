@@ -1,3 +1,15 @@
+## [2.0.2] - August 2026
+### Changed
+- Raised required_version to >= 1.9 to match CCoE Terraform conventions.
+- Renamed nutanix_vm.tf to mr-nutanix_vm.tf per the mr-<topic>.tf file
+  naming convention. No functional change.
+### Added
+- nutanix_wait_timeout variable (default 10 minutes) so callers can extend
+  the provider timeout for slow clusters. Nutanix VM creation on
+  HOB-CL-DEV1 has been measured at over 5 minutes. The variable is
+  declared here as part of the module interface; the provider block that
+  consumes it lives in the calling root module.
+
 ## [2.0.1] - August 2026
 ### Fixed
 - Category key `Umi_ITResponsible` corrected to `UMI_ITResponsible` to match

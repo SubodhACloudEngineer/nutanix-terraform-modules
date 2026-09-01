@@ -333,3 +333,22 @@ variable "extra_tags" {
   default     = {}
   nullable    = false
 }
+
+### Provider Behaviour ###
+
+# wait_timeout is a PROVIDER-level argument. This module deliberately does NOT
+# declare a provider block — provider configuration belongs in the calling root
+# module, not in a reusable child module. This variable is declared here only to
+# make the timeout part of the module's documented interface; the root module
+# passes the same value into its own `provider "nutanix"` block. Do NOT "fix"
+# this by adding a provider block to the module.
+variable "nutanix_wait_timeout" {
+  type        = number
+  description = "Timeout in minutes for Nutanix API operations. Increase for slow clusters or large disk images. VM creation on HOB-CL-DEV1 has been measured at over 5 minutes."
+  default     = 10
+
+  validation {
+    condition     = var.nutanix_wait_timeout > 0
+    error_message = "nutanix_wait_timeout must be greater than zero."
+  }
+}
