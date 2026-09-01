@@ -113,7 +113,7 @@ resource "nutanix_virtual_machine_v2" "this" {
     # VM would stay on its original Veeam tier forever. Categories are mutable
     # and must stay managed. If a permanent categories diff appears, diagnose
     # the ordering rather than suppressing it.
-    ignore_changes = [guest_customization]
+    ignore_changes = [guest_customization, cd_roms]
   }
 }
 
