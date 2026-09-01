@@ -40,7 +40,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.8.0"
+          terraform_version: "1.9.8"
 
       # -backend=false skips backend initialisation entirely.
       # The provider plugin (nutanix/nutanix v2.4) is still downloaded
@@ -67,7 +67,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.8.0"
+          terraform_version: "1.9.8"
 
       - name: terraform init (unit harness)
         working-directory: nutanix_vm/unit

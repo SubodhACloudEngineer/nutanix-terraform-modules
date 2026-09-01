@@ -92,17 +92,29 @@ resource "nutanix_virtual_machine_v2" "this" {
       }
     }
   }
-
-  # NOTE: lifecycle.ignore_changes = [categories] was previously set here and
-  # has been REMOVED. It suppressed all post-creation category drift, which
-  # meant a change to Umi_Backup in tfvars would never reach Prism Central and
-  # the VM would silently stay on its original Veeam tier forever. Categories
-  # must be manageable after creation.
-  #
-  # If a permanent diff appears on the categories block after the first real
-  # apply, that is an ordering problem to diagnose (the provider may return
-  # categories in a different order than declared) — not something to suppress.
-  # Raise it rather than reinstating this block.
+  lifecycle {
+    # Prism Central does not return the cloud-init / Sysprep payload on read —
+    # guest_customization is write-only. Without this, every refresh sees the
+    # block as absent from state and present in config, and since the attribute
+    # forces replacement, every plan proposes destroying and recreating the VM.
+    #
+    # Ignoring it is semantically correct, not a workaround: guest customization
+    # runs once at first boot. Changing the payload on an existing VM has no
+    # effect on that VM regardless of what Terraform does. To rebuild with a new
+    # payload, replace the VM explicitly:
+    #   terraform apply -replace='module.<name>.nutanix_virtual_machine_v2.this[0]'
+    #
+    # ignore_changes applies to updates only, so the payload is still applied
+    # normally on first create.
+    #
+    # CONTRAST: categories are deliberately NOT ignored here. An earlier version
+    # of this module had ignore_changes = [categories], which froze them at
+    # creation — a change to Umi_Backup would never reach Prism Central and the
+    # VM would stay on its original Veeam tier forever. Categories are mutable
+    # and must stay managed. If a permanent categories diff appears, diagnose
+    # the ordering rather than suppressing it.
+    ignore_changes = [guest_customization]
+  }
 }
 
 # Template path: deploy from a Prism Central VM Template via the v2 resource.
